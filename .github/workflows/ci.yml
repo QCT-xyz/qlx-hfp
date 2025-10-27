@@ -4,6 +4,12 @@ on:
     branches: ["**"]
   pull_request:
   workflow_dispatch:
+    inputs:
+      force:
+        description: "Run manually"
+        required: false
+        default: "true"
+
 jobs:
   test-and-sts:
     runs-on: ubuntu-latest
