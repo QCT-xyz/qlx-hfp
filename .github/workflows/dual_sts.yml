@@ -30,6 +30,8 @@ jobs:
           python src/qlx_sts_min.py --n-bits 200000 --whiten sha512 --json-out artifacts/sts_sha512.json
       - name: STS vn
         run: python src/qlx_sts_min.py --n-bits 200000 --whiten vn --json-out artifacts/sts_vn.json
+      - name: STS none (non-gating monitor)
+        run: python src/qlx_sts_min.py --n-bits 200000 --whiten none --json-out artifacts/sts_none.json
       - name: Upload sha512
         uses: actions/upload-artifact@v4
         with:
@@ -41,4 +43,10 @@ jobs:
         with:
           name: sts-report-vn
           path: artifacts/sts_vn.json
+          if-no-files-found: error
+      - name: Upload none (monitor)
+        uses: actions/upload-artifact@v4
+        with:
+          name: sts-report-none
+          path: artifacts/sts_none.json
           if-no-files-found: error

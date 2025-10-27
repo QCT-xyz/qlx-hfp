@@ -50,6 +50,9 @@ for path in ["artifacts/sts_sha512.json","artifacts/sts_vn.json"]:
 sys.exit(0 if ok else 2)
 PY
 
+      - name: STS none (non-gating monitor)
+        run: python src/qlx_sts_min.py --n-bits 200000 --whiten none --json-out artifacts/sts_none.json
+
       - name: Upload sha512
         uses: actions/upload-artifact@v4
         with:
@@ -62,4 +65,11 @@ PY
         with:
           name: sts-report-vn
           path: artifacts/sts_vn.json
+          if-no-files-found: error
+
+      - name: Upload none (monitor)
+        uses: actions/upload-artifact@v4
+        with:
+          name: sts-report-none
+          path: artifacts/sts_none.json
           if-no-files-found: error
