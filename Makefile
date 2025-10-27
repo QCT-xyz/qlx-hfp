@@ -1,8 +1,22 @@
 PY := python3
 export PYTHONPATH := src
 SEED ?= qlx-demo-seed-phi369
+LEVELS ?= 5
 
-.PHONY: install test demo sts export verify
+# KDF params
+KDF ?= argon2id
+PW ?= demo-password
+LEN ?= 32
+
+# Export params
+DAC ?= 14
+GSA ?= 64
+QUANT ?= nearest
+KEY ?= test-key
+KEY_ID ?= ctrl-01
+OUT ?= artifacts_cli
+
+.PHONY: install test demo sts export verify ci-local long-sts key export-cli
 
 install:
 	$(PY) -m pip install -r requirements.txt
@@ -21,3 +35,15 @@ export:
 
 verify:
 	$(PY) scripts/verify_payloads.py
+
+ci-local: test sts
+
+long-sts:
+	$(PY) src/qlx_sts_min.py --n-bits 2000000 --whiten sha512
+
+# Convenience
+key:
+	$(PY) scripts/qlx.py key --kdf $(KDF) --pw "$(PW)" --length $(LEN) --seed "$(SEED)" --levels $(LEVELS)
+
+export-cli:
+	$(PY) scripts/qlx.py export --seed "$(SEED)" --levels $(LEVELS) --dac-bits $(DAC) --sample-gsa $(GSA) --quant $(QUANT) --key "$(KEY)" --key-id "$(KEY_ID)" --out "$(OUT)"

@@ -1,5 +1,10 @@
 import math, json, hashlib, hmac, struct, time, random
 import numpy as np
+try:
+    from argon2.low_level import hash_secret_raw, Type
+    HAVE_ARGON2 = True
+except Exception:
+    HAVE_ARGON2 = False
 
 # ---------- helpers ----------
 def shannon_entropy(x, bins=64):
@@ -108,6 +113,24 @@ def assemble_hfp(seed_phrase, levels=5, seed_harmonics=(3,6,9,27,54,111,216), ph
     record["fingerprint_hash"] = fingerprint
     return record
 
+def derive_key_argon2id(password: bytes, hfp_hash_hex: str, key_len=32, time_cost=2, memory_cost_kib=65536, parallelism=1):
+    """
+    Argon2id KDF - memory_cost_kib is in KiB (65536 KiB = 64 MiB by default).
+    Salt is derived from the HFP hash prefix to bind keys to the fingerprint.
+    """
+    if not globals().get("HAVE_ARGON2", False):
+        raise RuntimeError("argon2-cffi not installed")
+    salt = bytes.fromhex(hfp_hash_hex[:32])  # 16-byte salt
+    return hash_secret_raw(
+        secret=password,
+        salt=salt,
+        time_cost=time_cost,
+        memory_cost=memory_cost_kib,
+        parallelism=parallelism,
+        hash_len=key_len,
+        type=Type.ID
+    )
+
 
 def derive_key_from_hfp(password: bytes, hfp_hash_hex: str, key_len=32):
     salt = bytes.fromhex(hfp_hash_hex[:32])  # 16 bytes from HFP hash prefix
@@ -161,3 +184,8 @@ if __name__ == "__main__":
     print("HFP hash:", hfp["fingerprint_hash"][:48] + "...")
     print("HKDF key (32B):", hkdf_key.hex())
     print("scrypt key (32B):", scrypt_key.hex())
+    try:
+        arg2 = derive_key_argon2id(b"demo-password", hfp["fingerprint_hash"], key_len=32)
+        print("Argon2id key (32B):", arg2.hex())
+    except Exception as e:
+        print("Argon2id key (skipped):", str(e))
