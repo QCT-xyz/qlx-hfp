@@ -1,5 +1,13 @@
 import math, json, hashlib, hmac, struct, time, random
 import numpy as np
+import os
+
+def _env_int(key, default):
+    try:
+        return int(os.environ.get(key, default))
+    except Exception:
+        return default
+
 try:
     from argon2.low_level import hash_secret_raw, Type
     HAVE_ARGON2 = True
@@ -113,14 +121,13 @@ def assemble_hfp(seed_phrase, levels=5, seed_harmonics=(3,6,9,27,54,111,216), ph
     record["fingerprint_hash"] = fingerprint
     return record
 
-def derive_key_argon2id(password: bytes, hfp_hash_hex: str, key_len=32, time_cost=2, memory_cost_kib=65536, parallelism=1):
-    """
-    Argon2id KDF - memory_cost_kib is in KiB (65536 KiB = 64 MiB by default).
-    Salt is derived from the HFP hash prefix to bind keys to the fingerprint.
-    """
+def derive_key_argon2id(password: bytes, hfp_hash_hex: str, key_len=32, time_cost=None, memory_cost_kib=None, parallelism=None):
     if not globals().get("HAVE_ARGON2", False):
         raise RuntimeError("argon2-cffi not installed")
-    salt = bytes.fromhex(hfp_hash_hex[:32])  # 16-byte salt
+    if time_cost is None: time_cost = _env_int("ARGON2_TIME_COST", 2)
+    if memory_cost_kib is None: memory_cost_kib = _env_int("ARGON2_MEMORY_KIB", 65536)
+    if parallelism is None: parallelism = _env_int("ARGON2_PARALLELISM", 1)
+    salt = bytes.fromhex(hfp_hash_hex[:32])
     return hash_secret_raw(
         secret=password,
         salt=salt,
