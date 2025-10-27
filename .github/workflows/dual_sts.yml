@@ -31,7 +31,9 @@ jobs:
       - name: STS vn
         run: python src/qlx_sts_min.py --n-bits 200000 --whiten vn --json-out artifacts/sts_vn.json
       - name: STS none (non-gating monitor)
-        run: python src/qlx_sts_min.py --n-bits 200000 --whiten none --json-out artifacts/sts_none.json
+        run: |
+          mkdir -p artifacts
+          python src/qlx_sts_min.py --n-bits 200000 --whiten none --json-out artifacts/sts_none.json || true
       - name: Upload sha512
         uses: actions/upload-artifact@v4
         with:
