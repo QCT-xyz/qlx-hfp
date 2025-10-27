@@ -7,6 +7,10 @@ on:
 jobs:
   test-and-sts:
     runs-on: ubuntu-latest
+    env:
+      ARGON2_TIME_COST: "2"
+      ARGON2_MEMORY_KIB: "65536"
+      ARGON2_PARALLELISM: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -14,9 +18,16 @@ jobs:
           python-version: "3.13"
           cache: "pip"
       - name: Install deps
-        run: |
-          python -m pip install -r requirements.txt
+        run: python -m pip install -r requirements.txt
       - name: Run unit tests
         run: make test
-      - name: Run STS mini battery
-        run: make sts
+      - name: Run STS and write JSON
+        run: |
+          mkdir -p artifacts
+          python src/qlx_sts_min.py --n-bits 200000 --whiten sha512 --json-out artifacts/sts_report.json
+      - name: Upload STS report
+        uses: actions/upload-artifact@v4
+        with:
+          name: sts-report
+          path: artifacts/sts_report.json
+          if-no-files-found: error
