@@ -1,0 +1,23 @@
+name: qlx-hfp-nightly
+on:
+  schedule:
+    - cron: "30 6 * * *"   # daily at 06:30 UTC
+  workflow_dispatch:
+jobs:
+  nightly-sts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+      - name: Install deps
+        run: python -m pip install -r requirements.txt
+      - name: Long STS (2e6 bits)
+        run: python src/qlx_sts_min.py --n-bits 2000000 --whiten sha512
+      # Optional dieharder - uncomment if you want it
+      # - name: Install dieharder
+      #   run: sudo apt-get update && sudo apt-get install -y dieharder
+      # - name: Dieharder run (very long)
+      #   run: python src/qlx_sts_min.py --n-bits 40000000 --dieharder
