@@ -69,6 +69,17 @@ PY
           path: artifacts/sts_vn.json
           if-no-files-found: error
 
+      - name: Run summary
+        run: |
+          python scripts/sts_summarize.py
+      - name: Upload summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: sts-summary
+          path: |
+            artifacts/sts_summary.json
+            artifacts/sts_summary.html
+          if-no-files-found: error
       - name: Upload none (monitor)
         uses: actions/upload-artifact@v4
         with:
