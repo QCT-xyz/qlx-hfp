@@ -39,6 +39,9 @@ verify:
 ci-local: test sts
 
 long-sts:
+
+bounds:
+	$(PY) scripts/check_bounds.py
 	$(PY) src/qlx_sts_min.py --n-bits 2000000 --whiten sha512
 
 # Convenience
