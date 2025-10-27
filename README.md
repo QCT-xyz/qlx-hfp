@@ -5,3 +5,5 @@ Goal: deterministic Harmonic Fingerprint from a seed using the 3-6-9 family with
 Next steps:
 - implement hfp kernel in src/qlx_hfp_prototype.py
 - add tests and a simple Makefile
+
+[![CI](https://github.com/QCT-xyz/qlx-hfp/actions/workflows/ci.yml/badge.svg)](https://github.com/QCT-xyz/qlx-hfp/actions/workflows/ci.yml)
