@@ -21,13 +21,16 @@ jobs:
         run: python -m pip install -r requirements.txt
       - name: Unit tests
         run: make test
+
       - name: STS sha512
         run: |
           mkdir -p artifacts
           python src/qlx_sts_min.py --n-bits 200000 --whiten sha512 --json-out artifacts/sts_sha512.json
+
       - name: STS vn
         run: python src/qlx_sts_min.py --n-bits 200000 --whiten vn --json-out artifacts/sts_vn.json
-      - name: Check min_p guard
+
+      - name: Guard min_p
         run: |
           python - << "PY"
 import json, sys
@@ -40,12 +43,14 @@ for path in ["artifacts/sts_sha512.json","artifacts/sts_vn.json"]:
         ok = False
 sys.exit(0 if ok else 2)
 PY
+
       - name: Upload sha512
         uses: actions/upload-artifact@v4
         with:
           name: sts-report-sha512
           path: artifacts/sts_sha512.json
           if-no-files-found: error
+
       - name: Upload vn
         uses: actions/upload-artifact@v4
         with:
