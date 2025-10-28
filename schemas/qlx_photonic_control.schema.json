@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QLX Photonic Control Envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string" },
+    "session_id": { "type": "string" },
+    "hfp_hash": { "type": "string", "pattern": "^[0-9a-fA-F]{128}$" },
+    "band_count": { "type": "integer", "minimum": 1 },
+    "mode": { "type": "string", "enum": ["static", "dither", "sweep", "schedule"] },
+    "apply": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "at": { "type": "string" },
+        "ramp_ms": { "type": "number", "minimum": 0 },
+        "hold_ms": { "type": "number", "minimum": 0 },
+        "ttl_ms": { "type": "number", "minimum": 0 }
+      },
+      "required": ["ramp_ms"]
+    },
+    "params": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "I_bias_mA": { "type": "array", "items": { "type": "number" } },
+        "phi_rad":   { "type": "array", "items": { "type": "number" } },
+        "kappa":     { "type": "array", "items": { "type": "number" } },
+        "tau_ps":    { "type": "array", "items": { "type": "number" } },
+        "delta_f_GHz": { "type": "array", "items": { "type": "number" } },
+        "alpha":     { "type": "array", "items": { "type": "number" } }
+      },
+      "required": ["I_bias_mA","phi_rad","kappa","tau_ps","delta_f_GHz","alpha"]
+    },
+    "dac": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "width_bits": { "type": "integer", "enum": [12, 14, 16] },
+        "sample_rate_GSa": { "type": "number" },
+        "quantization": { "type": "string", "enum": ["nearest","floor","stochastic"] }
+      },
+      "required": ["width_bits","sample_rate_GSa","quantization"]
+    },
+    "signing": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "alg": { "type": "string" },
+        "key_id": { "type": "string" },
+        "sig": { "type": "string" }
+      }
+    }
+  },
+  "required": ["version","session_id","hfp_hash","band_count","mode","apply","params","dac"]
+}
