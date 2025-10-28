@@ -63,3 +63,30 @@ jobs:
           name: sts-report-none
           path: artifacts/sts_none.json
           if-no-files-found: error
+
+      # ---- Ed25519 envelope generate + verify + upload ----
+      - name: Generate Ed25519 keypair
+        shell: bash
+        run: |
+          python - <<'PYK' > edk.env
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from cryptography.hazmat.primitives import serialization
+priv=Ed25519PrivateKey.generate()
+print("ED25519_PRIV_HEX="+priv.private_bytes(encoding=serialization.Encoding.Raw,format=serialization.PrivateFormat.Raw,encryption_algorithm=serialization.NoEncryption()).hex())
+print("ED25519_PUB_HEX="+priv.public_key().public_bytes(encoding=serialization.Encoding.Raw,format=serialization.PublicFormat.Raw).hex())
+PYK
+          cat edk.env >> "$GITHUB_ENV"
+
+      - name: Build Ed25519-signed envelope
+        run: python scripts/export_payloads.py --seed "qlx-demo-seed-phi369" --sig-alg ed25519 --ed25519-priv-hex "$ED25519_PRIV_HEX"
+
+      - name: Validate envelope (schema + Ed25519 verify)
+        run: python scripts/validate_envelope.py artifacts/photonic_env_signed.json --ed25519-pub-hex "$ED25519_PUB_HEX"
+
+      - name: Upload envelope and validation
+        uses: actions/upload-artifact@v4
+        with:
+          name: envelope-verify
+          path: |
+            artifacts/photonic_env_signed.json
+            artifacts/env_validation.json
