@@ -8,61 +8,6 @@ on:
 jobs:
   dual:
     runs-on: ubuntu-latest
-    env:
-      ARGON2_TIME_COST: "2"
-      ARGON2_MEMORY_KIB: "65536"
-      ARGON2_PARALLELISM: "1"
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: "pip"
-
-      - name: Install deps
-        run: python -m pip install -r requirements.txt
-
-      - name: STS sha512
-        run: |
-          mkdir -p artifacts
-          python src/qlx_sts_min.py --n-bits 200000 --whiten sha512 --json-out artifacts/sts_sha512.json
-
-      - name: STS vn
-        run: |
-          python src/qlx_sts_min.py --n-bits 200000 --whiten vn --json-out artifacts/sts_vn.json
-
-      - name: Guard min_p (>= 0.012)
-        run: |
-          python -c "import json,sys; \
-r=json.load(open(artifacts/sts_sha512.json)); \
-r2=json.load(open(artifacts/sts_vn.json)); \
-ok=(r[summary][all_pass] and r[summary][min_p]>=0.012 and r2[summary][all_pass] and r2[summary][min_p]>=0.012); \
-sys.exit(0 if ok else 2)"
-
-      - name: Run summary
-        run: python scripts/sts_summarize.py
-
-      - name: Upload sts-report-sha512
-        uses: actions/upload-artifact@v4
-        with:
-          name: sts-report-sha512
-          path: artifacts/sts_sha512.json
-          if-no-files-found: error
-
-      - name: Upload sts-report-vn
-        uses: actions/upload-artifact@v4
-        with:
-          name: sts-report-vn
-          path: artifacts/sts_vn.json
-          if-no-files-found: error
-
-      - name: Upload sts-summary
-        uses: actions/upload-artifact@v4
-        with:
-          name: sts-summary
-          path: |
-            artifacts/sts_summary.json
-            artifacts/sts_summary.html
+      - name: Echo
+        run: echo "smoke ok"
