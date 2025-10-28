@@ -40,6 +40,7 @@ jobs:
           python src/qlx_sts_min.py --n-bits 200000 --whiten vn --json-out artifacts/sts_vn.json
 
       - name: Guard min_p (>= 0.012)
+        shell: bash
         run: |
           python - <<PY
 import json, sys
