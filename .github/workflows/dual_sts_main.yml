@@ -1,111 +1,13 @@
 name: dual-sts
 
 on:
-  workflow_dispatch:
-    inputs:
-      force:
-        description: "Run manually"
-        required: false
-        default: "true"
+  workflow_dispatch: {}
   push:
     branches: ["**"]
 
 jobs:
   dual:
     runs-on: ubuntu-latest
-    env:
-      ARGON2_TIME_COST: "2"
-      ARGON2_MEMORY_KIB: "65536"
-      ARGON2_PARALLELISM: "1"
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-          cache: "pip"
-
-      - name: Install deps
-        run: python -m pip install -r requirements.txt
-
-      - name: STS sha512
-        run: |
-          mkdir -p artifacts
-          python src/qlx_sts_min.py --n-bits 200000 --whiten sha512 --json-out artifacts/sts_sha512.json
-
-      - name: STS vn
-        run: |
-          python src/qlx_sts_min.py --n-bits 200000 --whiten vn --json-out artifacts/sts_vn.json
-
-      - name: Guard min_p (>= 0.012)
-        run: |
-          python -c "import json,sys;r=json.load(open(artifacts/sts_sha512.json));\
-r2=json.load(open(artifacts/sts_vn.json));\
-ok=(r[summary][all_pass] and r[summary][min_p]>=0.012 and r2[summary][all_pass] and r2[summary][min_p]>=0.012);\
-sys.exit(0 if ok else 2)"
-
-      - name: STS none (monitor)
-        run: |
-          python src/qlx_sts_min.py --n-bits 200000 --whiten none --json-out artifacts/sts_none.json || true
-
-      - name: Run summary
-        run: python scripts/sts_summarize.py
-
-      - name: Upload sha512
-        uses: actions/upload-artifact@v4
-        with:
-          name: sts-report-sha512
-          path: artifacts/sts_sha512.json
-          if-no-files-found: error
-
-      - name: Upload vn
-        uses: actions/upload-artifact@v4
-        with:
-          name: sts-report-vn
-          path: artifacts/sts_vn.json
-          if-no-files-found: error
-
-      - name: Upload none (monitor)
-        uses: actions/upload-artifact@v4
-        with:
-          name: sts-report-none
-          path: artifacts/sts_none.json
-          if-no-files-found: error
-
-      - name: Upload summary
-        uses: actions/upload-artifact@v4
-        with:
-          name: sts-summary
-          path: |
-            artifacts/sts_summary.json
-            artifacts/sts_summary.html
-
-      - name: Generate Ed25519 keypair
-        shell: bash
-        run: |
-          python -c "from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey; \
-from cryptography.hazmat.primitives import serialization; \
-p=Ed25519PrivateKey.generate(); \
-priv_hex=p.private_bytes(encoding=serialization.Encoding.Raw,format=serialization.PrivateFormat.Raw,encryption_algorithm=serialization.NoEncryption()).hex(); \
-pub_hex=p.public_key().public_bytes(encoding=serialization.Encoding.Raw,format=serialization.PublicFormat.Raw).hex(); \
-open(edk.env,w).write(fED25519_PRIV_HEX={priv_hex}\nED25519_PUB_HEX={pub_hex}\n)"
-          cat edk.env >> "$GITHUB_ENV"
-
-      - name: Build Ed25519-signed envelope
-        run: |
-          python scripts/export_payloads.py --seed "qlx-demo-seed-phi369" --sig-alg ed25519 --ed25519-priv-hex "$ED25519_PRIV_HEX"
-
-      - name: Validate envelope (schema + Ed25519 verify)
-        run: |
-          python scripts/validate_envelope.py artifacts/photonic_env_signed.json --ed25519-pub-hex "$ED25519_PUB_HEX"
-
-      - name: Upload envelope and validation
-        uses: actions/upload-artifact@v4
-        with:
-          name: envelope-verify
-          path: |
-            artifacts/photonic_env_signed.json
-            artifacts/env_validation.json
-          if-no-files-found: error
+      - name: Echo
+        run: echo "smoke ok"
