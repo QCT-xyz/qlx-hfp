@@ -36,7 +36,21 @@ jobs:
       - name: STS vn
         run: python src/qlx_sts_min.py --n-bits 200000 --whiten vn --json-out artifacts/sts_vn.json
 
-      - name: Guard min_p
+      - name: Guard min_p\n
+      - name: Build signed envelope
+        run: python scripts/export_payloads.py --seed "qlx-demo-seed-phi369"
+      - name: Validate envelope against schema
+        run: |
+          python -m pip install -r requirements.txt
+          python scripts/validate_envelope.py artifacts/photonic_env_signed.json
+      - name: Upload envelope and validation
+        uses: actions/upload-artifact@v4
+        with:
+          name: envelope-verify
+          path: |
+            artifacts/photonic_env_signed.json
+            artifacts/env_validation.json
+          if-no-files-found: error
         run: |
           python - << "PY"
 import json, sys
