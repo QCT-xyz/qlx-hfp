@@ -14,16 +14,14 @@ jobs:
         with:
           python-version: "3.11"
           cache: "pip"
+
       - name: Install deps
         run: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+
       - name: Generate Ed25519 keypair
         run: |
-          python -c "from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey; \
-from cryptography.hazmat.primitives import serialization; \
-p=Ed25519PrivateKey.generate(); \
-priv_hex=p.private_bytes(encoding=serialization.Encoding.Raw,format=serialization.PrivateFormat.Raw,encryption_algorithm=serialization.NoEncryption()).hex(); \
-pub_hex=p.public_key().public_bytes(encoding=serialization.Encoding.Raw,format=serialization.PublicFormat.Raw).hex(); \
-open('edk.env','w').write(f'ED25519_PRIV_HEX={priv_hex}\\nED25519_PUB_HEX={pub_hex}\\n')"
+          python -c 'from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey; from cryptography.hazmat.primitives import serialization; p=Ed25519PrivateKey.generate(); priv_hex=p.private_bytes(encoding=serialization.Encoding.Raw, format=serialization.PrivateFormat.Raw, encryption_algorithm=serialization.NoEncryption()).hex(); pub_hex=p.public_key().public_bytes(encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw).hex(); open("edk.env","w").write(f"ED25519_PRIV_HEX={priv_hex}\nED25519_PUB_HEX={pub_hex}\n")'
           cat edk.env >> "$GITHUB_ENV"
+
       - name: Smoke
         run: python -c "print('keygen ok')"
