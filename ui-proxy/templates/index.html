@@ -1,0 +1,57 @@
+<!doctype html><meta charset="utf-8">
+<title>QLX UI Proxy</title>
+<style>body{font-family:system-ui,Arial;margin:24px;max-width:920px}form{margin:12px 0;padding:12px;border:1px solid #ccc;border-radius:8px}pre{background:#f7f7f7;padding:12px;border-radius:6px;overflow:auto}</style>
+<h2>QLX UI Proxy</h2>
+<p>Backend API: <code>{{ api_base }}</code></p>
+
+<form id="hfp">
+  <h3>HFP</h3>
+  <label>seed <input name="seed" value="qlx-demo-seed-phi369"></label>
+  <label>levels <input name="levels" type="number" value="5"></label>
+  <button>Generate</button>
+  <pre id="hfp_out"></pre>
+</form>
+
+<form id="sts">
+  <h3>STS</h3>
+  <label>seed <input name="seed" value="qlx-demo-seed-phi369"></label>
+  <label>n_bits <input name="n_bits" type="number" value="200000"></label>
+  <label>whiten
+    <select name="whiten">
+      <option>sha512</option><option>vn</option><option>none</option>
+    </select>
+  </label>
+  <button>Run</button>
+  <pre id="sts_out"></pre>
+</form>
+
+<form id="env">
+  <h3>Envelope</h3>
+  <label>seed <input name="seed" value="qlx-demo-seed-phi369"></label>
+  <label>levels <input name="levels" type="number" value="5"></label>
+  <label>dac_bits <input name="dac_bits" type="number" value="14"></label>
+  <label>sample_gsa <input name="sample_gsa" type="number" value="64"></label>
+  <label>quant
+    <select name="quant">
+      <option>nearest</option><option>floor</option><option>stochastic</option>
+    </select>
+  </label>
+  <button>Build</button>
+  <pre id="env_out"></pre>
+</form>
+
+<script>
+async function submit(id, path, outId){
+  const f=document.getElementById(id);
+  f.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const body = new URLSearchParams(new FormData(f));
+    const res = await fetch(path, {method:'POST', body});
+    const txt = await res.text();
+    document.getElementById(outId).textContent = txt;
+  });
+}
+submit('hfp','/call/hfp','hfp_out');
+submit('sts','/call/sts','sts_out');
+submit('env','/call/envelope','env_out');
+</script>

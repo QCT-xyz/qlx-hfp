@@ -56,7 +56,13 @@ def cmd_export(args):
     hfp = assemble_hfp(args.seed, levels=args.levels)
     params = photonic_map(hfp["band_stats"])
     env = make_envelope(hfp, params, dac_bits=args.dac_bits, sample_rate_GSa=args.sample_gsa, quant_mode=args.quant)
-    signed = sign_envelope_hmac(env, key=args.key.encode(), key_id=args.key_id)
+    if args.sig_alg == "hmac":
+        signed = sign_envelope_hmac(env, key=args.key.encode(), key_id=args.key_id)
+    else:
+        if not args.ed25519-priv-hex:
+            raise SystemExit("ed25519 requires --ed25519-priv-hex or ED25519_PRIV_HEX")
+        from qlx_photonic_control import sign_envelope_ed25519
+        signed = sign_envelope_ed25519(env, priv_hex=(args.ed25519-priv-hex or os.environ.get("ED25519_PRIV_HEX","")), key_id=args.key_id)
 
     out = args.out
     os.makedirs(out, exist_ok=True)
@@ -107,6 +113,9 @@ def main():
     pk.set_defaults(func=cmd_key)
 
     pe = sub.add_parser("export", help="write HFP and signed photonic envelope")
+    pe.add_argument("--sig-alg", choices=["hmac","ed25519"], default="hmac")
+    pe.add_argument("--ed25519-priv-hex", default="")
+    pe.add_argument("--ed25519-key-id", default="ctrl-ed25519")
     pe.add_argument("--seed", default="qlx-demo-seed-phi369")
     pe.add_argument("--levels", type=int, default=5)
     pe.add_argument("--dac-bits", type=int, default=14)
