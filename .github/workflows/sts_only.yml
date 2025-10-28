@@ -9,28 +9,14 @@ jobs:
   sts:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
-
-      - name: Install minimal deps
-        run: python -m pip install --upgrade pip && python -m pip install numpy
-
-      - name: STS sha512
-        run: |
-          mkdir -p artifacts
-          python src/qlx_sts_min.py --n-bits 200000 --whiten sha512 --json-out artifacts/sts_sha512.json
-
-      - name: STS vn
-        run: |
-          python src/qlx_sts_min.py --n-bits 200000 --whiten vn --json-out artifacts/sts_vn.json
-
-      # Guard at 0.010 to avoid 200k-bit flicker
+      - run: python -m pip install --upgrade pip && python -m pip install numpy
+      - run: mkdir -p artifacts && python src/qlx_sts_min.py --n-bits 200000 --whiten sha512 --json-out artifacts/sts_sha512.json
+      - run: python src/qlx_sts_min.py --n-bits 200000 --whiten vn --json-out artifacts/sts_vn.json
       - name: Guard min_p (>= 0.010)
         run: |
           python -c "import json,sys; \
@@ -39,28 +25,20 @@ r2=json.load(open('artifacts/sts_vn.json')); \
 ok=(r['summary']['all_pass'] and r['summary']['min_p']>=0.010 and r2['summary']['all_pass'] and r2['summary']['min_p']>=0.010); \
 print('min_p sha512=', r['summary']['min_p'], 'vn=', r2['summary']['min_p']); \
 sys.exit(0 if ok else 2)"
-
-      - name: Build summary
+      - run: python scripts/sts_summarize.py
         if: always()
-        run: python scripts/sts_summarize.py
-
-      - name: Upload sts-report-sha512
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
           name: sts-report-sha512
           path: artifacts/sts_sha512.json
-
-      - name: Upload sts-report-vn
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
           name: sts-report-vn
           path: artifacts/sts_vn.json
-
-      - name: Upload sts-summary
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
           name: sts-summary
           path: |
