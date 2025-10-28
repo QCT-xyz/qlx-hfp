@@ -1,5 +1,8 @@
 # QLX HFP
 
+[![qlx-sts-v1](https://github.com/QCT-xyz/qlx-hfp/actions/workflows/qlx_sts_v1.yml/badge.svg)](https://github.com/QCT-xyz/qlx-hfp/actions/workflows/qlx_sts_v1.yml) [![qlx-envelope-v1](https://github.com/QCT-xyz/qlx-hfp/actions/workflows/qlx_envelope_v1.yml/badge.svg)](https://github.com/QCT-xyz/qlx-hfp/actions/workflows/qlx_envelope_v1.yml)
+
+
 Deterministic Harmonic Fingerprint (HFP) key and control pipeline with statistical gates, signed photonic envelopes, clean APIs, CI artifacts, and Cloud Run deployment.
 
 [![dual_sts](https://github.com/QCT-xyz/qlx-hfp/actions/workflows/dual_sts.yml/badge.svg)](https://github.com/QCT-xyz/qlx-hfp/actions/workflows/dual_sts.yml)
