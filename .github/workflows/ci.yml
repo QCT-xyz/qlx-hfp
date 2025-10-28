@@ -36,7 +36,34 @@ jobs:
       - name: STS vn
         run: python src/qlx_sts_min.py --n-bits 200000 --whiten vn --json-out artifacts/sts_vn.json
 
-      - name: Guard min_p\n
+      - name: Guard min_p\n- name: Generate ephemeral Ed25519 keypair
+        run: |
+          python - <<PYK > edk.env
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from cryptography.hazmat.primitives import serialization
+priv = Ed25519PrivateKey.generate()
+priv_hex = priv.private_bytes(encoding=serialization.Encoding.Raw, format=serialization.PrivateFormat.Raw, encryption_algorithm=serialization.NoEncryption()).hex()
+pub_hex  = priv.public_key().public_bytes(encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw).hex()
+print("ED25519_PRIV_HEX="+priv_hex)
+print("ED25519_PUB_HEX="+pub_hex)
+PYK
+          cat edk.env >> "$GITHUB_ENV"
+
+      - name: Build Ed25519-signed envelope
+        run: python scripts/export_payloads.py --seed "qlx-demo-seed-phi369" --sig-alg ed25519 --ed25519-priv-hex "$ED25519_PRIV_HEX"
+
+      - name: Validate envelope (schema + Ed25519 verify)
+        run: |
+          python scripts/validate_envelope.py artifacts/photonic_env_signed.json --ed25519-pub-hex "$ED25519_PUB_HEX"
+
+      - name: Upload envelope and validation
+        uses: actions/upload-artifact@v4
+        with:
+          name: envelope-verify
+          path: |
+            artifacts/photonic_env_signed.json
+            artifacts/env_validation.json
+          if-no-files-found: error\n
       - name: Build signed envelope
         run: python scripts/export_payloads.py --seed "qlx-demo-seed-phi369"
       - name: Validate envelope against schema
