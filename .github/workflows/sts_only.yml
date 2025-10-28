@@ -30,6 +30,7 @@ jobs:
         run: |
           python src/qlx_sts_min.py --n-bits 200000 --whiten vn --json-out artifacts/sts_vn.json
 
+      # Guard at 0.010 to avoid 200k-bit flicker
       - name: Guard min_p (>= 0.010)
         run: |
           python -c "import json,sys; \
