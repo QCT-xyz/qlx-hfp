@@ -1,4 +1,6 @@
 import json, math, hashlib, hmac, uuid, datetime
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey, Ed25519PublicKey
+from cryptography.hazmat.primitives import serialization
 import numpy as np
 
 def _normalize01(x):
@@ -115,3 +117,26 @@ def sign_envelope_hmac(envelope, key: bytes, key_id="ctrl-01"):
         "sig": sig
     }
     return envelope
+
+def sign_envelope_ed25519(envelope, priv_hex: str, key_id="ctrl-ed25519"):
+    msg = canonical_json(envelope)
+    priv = Ed25519PrivateKey.from_private_bytes(bytes.fromhex(priv_hex))
+    sig = priv.sign(msg).hex()
+    envelope = dict(envelope)
+    envelope["signing"] = {
+        "alg": "Ed25519", "key_id": key_id, "nonce": "",
+        "timestamp": datetime.datetime.now(datetime.UTC).replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "sig": sig
+    }
+    return envelope
+
+def verify_envelope_ed25519(envelope, pub_hex: str) -> bool:
+    env = dict(envelope)
+    signing = env.pop("signing", {})
+    sig_hex = signing.get("sig", "")
+    if not sig_hex:
+        return False
+    msg = canonical_json(env)
+    pub = Ed25519PublicKey.from_public_bytes(bytes.fromhex(pub_hex))
+    pub.verify(bytes.fromhex(sig_hex), msg)
+    return True
