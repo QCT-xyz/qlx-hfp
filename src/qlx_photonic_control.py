@@ -7,16 +7,37 @@ def _normalize01(x):
     return (x - mn) / (mx - mn + 1e-15)
 
 def photonic_map(band_stats):
+    import numpy as np, math
     means = np.array([b["mean"] for b in band_stats])
     stds  = np.array([b["std"]  for b in band_stats])
     ents  = np.array([b["entropy"] for b in band_stats])
 
-    I_bias_mA = 15.0 + _normalize01(means) * (50.0 - 15.0)
-    phi_rad   = 0.0  + _normalize01(ents)  * (math.pi - 0.0)
-    kappa     = 0.05 + _normalize01(stds)  * (0.90 - 0.05)
-    tau_ps    = 50.0 + _normalize01(np.roll(ents,1)) * (300.0 - 50.0)
-    delta_f   = -10.0 + _normalize01(np.roll(means,1)) * (10.0 - (-10.0))
-    alpha     = 2.0  + _normalize01(np.roll(stds,2))  * (6.0 - 2.0)
+    def norm_to(lo, hi, x):
+        x = np.asarray(x, dtype=float)
+        mn, mx = float(np.min(x)), float(np.max(x))
+        scale = (hi - lo) / (mx - mn + 1e-15)
+        return lo + (x - mn) * scale
+
+    # closed-range maps
+    I_bias_mA = norm_to(15.0, 50.0, means)
+    phi_rad   = norm_to(0.0,  math.pi, ents)
+    kappa     = norm_to(0.05, 0.90, stds)
+    tau_ps    = norm_to(50.0, 300.0, np.roll(ents, 1))
+    delta_f   = norm_to(-10.0, 10.0, np.roll(means, 1))
+    alpha     = norm_to(2.0, 6.0, np.roll(stds, 2))
+
+    # open-interval clip by 1 LSB of a 14-bit DAC
+    def clip_open(y, lo, hi, bits=14):
+        y = np.asarray(y, dtype=float)
+        eps = (hi - lo) / ((1 << bits) - 1)
+        return np.clip(y, lo + eps, hi - eps)
+
+    I_bias_mA = clip_open(I_bias_mA, 15.0, 50.0)
+    phi_rad   = clip_open(phi_rad,   0.0,  math.pi)
+    kappa     = clip_open(kappa,     0.05, 0.90)
+    tau_ps    = clip_open(tau_ps,    50.0, 300.0)
+    delta_f   = clip_open(delta_f,  -10.0, 10.0)
+    alpha     = clip_open(alpha,     2.0,  6.0)
 
     return {
         "I_bias_mA": I_bias_mA.tolist(),
@@ -28,7 +49,9 @@ def photonic_map(band_stats):
     }
 
 def _quantize(arr, lo, hi, bits, mode="nearest"):
+    import numpy as np
     arr = np.asarray(arr, dtype=float)
+    # clamp to closed interval first
     arr = np.clip(arr, lo, hi)
     q = (arr - lo) / (hi - lo)
     levels = (1 << bits) - 1
@@ -43,7 +66,12 @@ def _quantize(arr, lo, hi, bits, mode="nearest"):
         xi = np.floor(x) + (rnd < frac)
     else:
         raise ValueError("quantization mode")
-    return (xi / levels) * (hi - lo) + lo
+    # map back and clip to OPEN interval by one LSB
+    y = (xi / levels) * (hi - lo) + lo
+    eps = (hi - lo) / levels
+    y = np.clip(y, lo + eps, hi - eps)
+    return y
+
 
 def make_envelope(hfp, photonic_params, dac_bits=14, sample_rate_GSa=64,
                   quant_mode="nearest", mode="static", ramp_ms=10, hold_ms=2000, ttl_ms=10000):
