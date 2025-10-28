@@ -4,12 +4,16 @@ on:
   schedule:
     - cron: "30 6 * * *"   # daily at 06:30 UTC
   workflow_dispatch: {}
+  push:
+    branches: ["**"]       # allow manual push-trigger for debugging
 
 jobs:
   soak:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -29,17 +33,13 @@ jobs:
 
       - name: Build nightly summary
         run: |
-          python - <<'PY'
-import json, pathlib
-a = pathlib.Path("artifacts")
-sha = json.loads((a/"sts_sha512_2e6.json").read_text())["summary"]
-vn  = json.loads((a/"sts_vn_5e5.json").read_text())["summary"]
-summary = {"sha512_2e6": sha, "vn_5e5": vn}
-(a/"sts_nightly_summary.json").write_text(json.dumps(summary, indent=2))
-print(json.dumps(summary, indent=2))
-PY
+          python -c "import json; \
+sha=json.load(open('artifacts/sts_sha512_2e6.json'))['summary']; \
+vn=json.load(open('artifacts/sts_vn_5e5.json'))['summary']; \
+open('artifacts/sts_nightly_summary.json','w').write(json.dumps({'sha512_2e6':sha,'vn_5e5':vn}, indent=2))"
 
       - name: Upload nightly artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: sts-nightly
