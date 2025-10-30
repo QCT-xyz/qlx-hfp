@@ -42,8 +42,8 @@ export-cli:
 controller-verify:
 	PYTHONPATH=src python3 scripts/controller_verify.py "$(ENV)" --ed25519-pub-hex "$(PUB)"
 # One-command Cloud Run smoke test (requires gcloud auth & SA impersonation)
-smoke-cloud:
-	bash scripts/smoke_cloud_run.sh
-
 fetch-weekly:
+	./scripts/smoke_cloud_run.sh
+
+smoke-cloud:
 	./scripts/smoke_cloud_run.sh

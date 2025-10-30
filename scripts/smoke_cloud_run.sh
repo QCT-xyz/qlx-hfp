@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
-PROJECT="${PROJECT:-descent-surf-467802-h9}"
+PROJECT="${PROJECT:-decent-surf-467802-h9}"
 REGION="${REGION:-us-central1}"
 SERVICE="${SERVICE:-qlx-hfp-api}"
-SA="${SA:-qlx-hfp-sa@$PROJECT.iam.gserviceaccount.com}"
+SA="${SA:-qlx-hfp-sa@${PROJECT}.iam.gserviceaccount.com}"
 BASE="$(gcloud run services describe "$SERVICE" --region "$REGION" --format='value(status.url)')"
 IDTOK="$(gcloud auth print-identity-token --impersonate-service-account="$SA" --audiences="$BASE")"
-echo "BASE: $BASE"
+echo "PROJECT: $PROJECT"
+echo "REGION:  $REGION"
+echo "SERVICE: $SERVICE"
+echo "SA:      $SA"
+echo "BASE:    $BASE"
 echo "GET /"
 curl -sS -H "Authorization: Bearer $IDTOK" "$BASE/" | python3 -m json.tool || true
 echo "GET /readyz"
