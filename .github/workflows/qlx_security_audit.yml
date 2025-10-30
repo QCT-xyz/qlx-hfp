@@ -27,6 +27,7 @@ jobs:
 
       - name: Upload security audit
         uses: actions/upload-artifact@v4
+          retention-days: 30
         with:
           name: security-audit
           path: |

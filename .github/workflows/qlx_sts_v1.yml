@@ -36,18 +36,21 @@ jobs:
 
       - name: Upload sts-report-sha512
         uses: actions/upload-artifact@v4
+          retention-days: 30
         with:
           name: sts-report-sha512
           path: artifacts/sts_sha512.json
 
       - name: Upload sts-report-vn
         uses: actions/upload-artifact@v4
+          retention-days: 30
         with:
           name: sts-report-vn
           path: artifacts/sts_vn.json
 
       - name: Upload sts-summary
         uses: actions/upload-artifact@v4
+          retention-days: 30
         with:
           name: sts-summary
           path: |
