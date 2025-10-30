@@ -50,3 +50,13 @@ key:
 
 export-cli:
 	$(PY) scripts/qlx.py export --seed "$(SEED)" --levels $(LEVELS) --dac-bits $(DAC) --sample-gsa $(GSA) --quant $(QUANT) --key "$(KEY)" --key-id "$(KEY_ID)" --out "$(OUT)"
+
+# Run controller-side envelope verification (lengths, ranges, signature)
+# Usage: make controller-verify ENV=artifacts/photonic_env_signed.json PUB=<ED25519_PUB_HEX>
+controller-verify:
+	PYTHONPATH=src python3 scripts/controller_verify.py "$(ENV)" --ed25519-pub-hex "$(PUB)"
+
+# One-command Cloud Run smoke test (requires gcloud auth & SA impersonation)
+smoke-cloud:
+	bash scripts/smoke_cloud_run.sh
+
