@@ -102,3 +102,8 @@ def sts(req: STSReq):
     bits = stream_to_bits(stream, whiten=req.whiten)[:req.n_bits]
     report = run_suite(bits, alpha=req.alpha, block_M=req.block_M)
     return report
+
+
+@app.get("/readyz")
+def readyz():
+    return {"ok": True}
