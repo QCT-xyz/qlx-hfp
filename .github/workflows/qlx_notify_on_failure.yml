@@ -1,0 +1,24 @@
+name: qlx-notify-on-failure
+
+on:
+  workflow_run:
+    workflows:
+      - qlx-sts-v1
+      - qlx-sts-weekly
+    types: [completed]
+
+jobs:
+  notify:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Slack failure notification
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          REPO: ${{ github.repository }}
+          WF_NAME: ${{ github.event.workflow_run.name }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}
+        run: |
+          payload='{"text":"❌ '"$REPO"': '"$WF_NAME"' failed on '"$BRANCH"'. Run: '"$RUN_URL"'"}'
+          curl -sS -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL" || true
