@@ -6,3 +6,8 @@ __pycache__/
 artifacts*/
 artifacts*/
 .uvicorn.pid
+artifacts*/
+artifacts_ci/
+.uvicorn.pid
+job__logs.zip
+file.txt

@@ -1,0 +1,47 @@
+services:
+  - name: qlx-hfp-api
+    description: HFP API (FastAPI): /, /hfp, /sts, /envelope
+    project: decent-surf-467802-h9
+    region: us-central1
+    image_repo: us-central1-docker.pkg.dev/decent-surf-467802-h9/qlx-api/qlx-hfp
+    runtime: cloud-run
+    health:
+      liveness: /
+      readiness: /readyz
+    env:
+      - ARGON2_TIME_COST
+      - ARGON2_MEMORY_KIB
+      - ARGON2_PARALLELISM
+      - SIGN_ALG
+    secrets:
+      - ED25519_PRIV_HEX
+      - SIGNING_KEY
+    labels:
+      app: qlx
+      tier: api
+    repoDir: .
+    workflows:
+      - qlx-sts-v1
+      - qlx-sts-nightly
+      - qlx-sts-nightly-long
+      - qlx-sts-weekly
+      - qlx-envelope-v1
+      - qlx-security-audit
+
+  - name: qlx-ui-proxy
+    description: UI proxy (FastAPI + Jinja), server-side OIDC to API
+    project: decent-surf-467802-h9
+    region: us-central1
+    image_repo: us-central1-docker.pkg.dev/decent-surf-467802-h9/qlx-api/qlx-ui-proxy
+    runtime: cloud-run
+    health:
+      liveness: /
+      readiness: /
+    env:
+      - API_BASE
+    secrets: []
+    labels:
+      app: qlx
+      tier: ui
+    repoDir: ui-proxy
+    workflows: []
