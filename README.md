@@ -276,4 +276,20 @@ License
 
 MIT. See LICENSE.
 
+---
+
+## Controller Handoff (Offline Verify)
+
+Use the controller-side verifier to validate any signed envelope without the API:
+
+```bash
+PYTHONPATH=src python3 scripts/controller_verify.py artifacts/photonic_env_signed.json --ed25519-pub-hex "<ED25519_PUB_HEX>"
+```
+
+**What it checks**
+- **Lengths**: each parameter array matches `band_count`
+- **Ranges**: strictly inside the open interval by 1 DAC LSB (with a tiny tolerance)
+- **Signature**: Ed25519 (or HMAC)
+
+**Result**: JSON with `lengths_ok`, `ranges_ok`, `sig_ok`, and overall `ok`.
 
