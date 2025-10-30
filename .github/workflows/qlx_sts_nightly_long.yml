@@ -32,10 +32,7 @@ jobs:
 
       - name: Build nightly long summary
         run: |
-          python -c "import json; \
-sha=json.load(open('artifacts/sts_sha512_2e6.json'))['summary']; \
-vn=json.load(open('artifacts/sts_vn_5e5.json'))['summary']; \
-open('artifacts/sts_nightly_long_summary.json','w').write(json.dumps({'sha512_2e6':sha,'vn_5e5':vn}, indent=2))"
+          python -c "import json; json.dump({'sha512_2e6': json.load(open('artifacts/sts_sha512_2e6.json'))['summary'], 'vn_5e5': json.load(open('artifacts/sts_vn_5e5.json'))['summary']}, open('artifacts/sts_nightly_long_summary.json','w'), indent=2)"
 
       - name: Upload nightly long artifacts
         if: always()
