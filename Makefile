@@ -48,3 +48,6 @@ smoke-cloud:
 
 fetch-weekly:
 	./scripts/fetch_weekly.sh
+
+smoke-cloud:
+	./scripts/smoke_cloud_run.sh
