@@ -40,6 +40,9 @@ ci-local: test sts
 
 long-sts:
 
+fetch-weekly:
+	./scripts/fetch_weekly.sh
+
 bounds:
 	$(PY) scripts/check_bounds.py
 	$(PY) src/qlx_sts_min.py --n-bits 2000000 --whiten sha512
@@ -60,3 +63,6 @@ controller-verify:
 smoke-cloud:
 	bash scripts/smoke_cloud_run.sh
 
+
+fetch-weekly:
+	./scripts/fetch_weekly.sh
