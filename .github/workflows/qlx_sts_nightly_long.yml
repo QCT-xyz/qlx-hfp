@@ -26,20 +26,15 @@ jobs:
           mkdir -p artifacts
           python src/qlx_sts_min.py --n-bits 2000000 --whiten sha512 --json-out artifacts/sts_sha512_2e6.json
 
-      - name: Upload sha512 (2e6)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: sts-nightly-long
-          path: artifacts/sts_sha512_2e6.json
-
       - name: STS vn (5e5)
         run: |
           python src/qlx_sts_min.py --n-bits 500000 --whiten vn --json-out artifacts/sts_vn_5e5.json
 
-      - name: Upload vn (5e5)
+      - name: Upload nightly long artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: sts-nightly-long
-          path: artifacts/sts_vn_5e5.json
+          path: |
+            artifacts/sts_sha512_2e6.json
+            artifacts/sts_vn_5e5.json
