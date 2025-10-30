@@ -44,10 +44,6 @@ controller-verify:
 # One-command Cloud Run smoke test (requires gcloud auth & SA impersonation)
 smoke-cloud:
 	bash scripts/smoke_cloud_run.sh
-	./scripts/fetch_weekly.sh
 
 fetch-weekly:
-	./scripts/fetch_weekly.sh
-
-smoke-cloud:
 	./scripts/smoke_cloud_run.sh
