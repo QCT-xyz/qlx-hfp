@@ -17,15 +17,32 @@ jobs:
         with:
           python-version: "3.11"
           cache: "pip"
+
       - name: Install minimal deps
         run: python -m pip install --upgrade pip && python -m pip install numpy
+
       - name: STS sha512 (2e6)
         run: |
           mkdir -p artifacts
           python src/qlx_sts_min.py --n-bits 2000000 --whiten sha512 --json-out artifacts/sts_sha512_2e6.json
-      - name: Upload sha512 (2e6)
+
+      - name: STS vn (5e5)
+        run: |
+          python src/qlx_sts_min.py --n-bits 500000 --whiten vn --json-out artifacts/sts_vn_5e5.json
+
+      - name: Build nightly long summary
+        run: |
+          python -c "import json; \
+sha=json.load(open('artifacts/sts_sha512_2e6.json'))['summary']; \
+vn=json.load(open('artifacts/sts_vn_5e5.json'))['summary']; \
+open('artifacts/sts_nightly_long_summary.json','w').write(json.dumps({'sha512_2e6':sha,'vn_5e5':vn}, indent=2))"
+
+      - name: Upload nightly long artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: sts-nightly-long
-          path: artifacts/sts_sha512_2e6.json
+          path: |
+            artifacts/sts_sha512_2e6.json
+            artifacts/sts_vn_5e5.json
+            artifacts/sts_nightly_long_summary.json
